@@ -38,11 +38,9 @@ Ideal for marine monitoring, bioacoustics projects, and automatic detection of w
 
 The system can be installed with:
 ```
-curl -s https://raw.githubusercontent.com/mcguirepr89/BirdNET-Pi/main/newinstaller.sh | bash
+curl -s https://raw.githubusercontent.com/dani-cuar/birdnet_pi_modified/stable/newinstaller.sh | bash
 ```
 The installer takes care of any and all necessary updates, so you can run that as the very first command upon the first boot, if you'd like.
-
-The installation creates a log in `/home/pi/installation.log` that you can [email me](mailto:mcguirepr89@gmail.com) if you encounter any issues during installation.
 
 ## Access
 The BirdNET-Pi can be accessed from any web browser on the same network:
