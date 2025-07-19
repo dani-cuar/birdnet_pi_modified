@@ -1,15 +1,4 @@
-<h1 align="center">
-  BirdNET-Pi <img src="https://img.shields.io/badge/Version-0.13-pink" />
-</h1>
-<p align="center">
-A realtime acoustic bird classification system for the Raspberry Pi 4B
-</p>
-<p align="center">
-  <img src="https://user-images.githubusercontent.com/60325264/140656397-bf76bad4-f110-467c-897d-992ff0f96476.png" />
-</p>
-<p align="center">
-Icon made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
-</p>
+
 
 ## Introduction
 BirdNET-Pi is built on the [TFLite version of BirdNET](https://github.com/kahst/BirdNET-Lite) by [**@kahst**](https://github.com/kahst) <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg"></a> using [pre-built TFLite binaries](https://github.com/PINTO0309/TensorflowLite-bin) by [**@PINTO0309**](https://github.com/PINTO0309) . It is able to recognize bird sounds from a USB sound card in realtime and share its data with the rest of the world.
