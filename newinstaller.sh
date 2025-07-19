@@ -6,12 +6,15 @@ USER=$USER
 export HOME=$HOME
 export USER=$USER
 
-branch=main
+# branch=main ##ORIGINAL
+branch=stable
 if ! which git &> /dev/null;then
   sudo apt update
   sudo apt -y install git
 fi
-git clone -b $branch https://github.com/mcguirepr89/BirdNET-Pi.git ${HOME}/BirdNET-Pi &&
+# git clone -b $branch https://github.com/mcguirepr89/BirdNET-Pi.git ${HOME}/BirdNET-Pi && ##ORIGINAL
+git clone -b $branch https://github.com/dani-cuar/birdnet_pi_modified.git ${HOME}/BirdNET-Pi &&
+
 
 $HOME/BirdNET-Pi/scripts/install_birdnet.sh
 if [ ${PIPESTATUS[0]} -eq 0 ];then
