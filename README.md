@@ -3,29 +3,29 @@
 ## Introduction
 This version of BirdNET-Pi preserves the complete infrastructure of BirdNET-Pi (recording, real-time analysis, web interface, clip extraction, database, etc.), but replaces the original recognition model with a custom PyTorch ResNet18 model specifically trained for the detection of whale S10 whistles.
 
-The system still runs on a Raspberry Pi 4, using the power of PyTorch and a ResNet18 model, adapting the BirdNET-Pi workflow for marine bioacoustics.
+The system still runs on a Raspberry Pi, using the power of PyTorch and a ResNet18 model, adapting the BirdNET-Pi workflow for marine bioacoustics.
 
-Main Differences in This Version
+## Main Differences in This Version
 The original BirdNET-Lite (TFLite) model has been replaced by a custom PyTorch (ResNet18) model to identify whale S10 whistles.
 
 The rest of the infrastructure (recording, web interface, databases, clip extraction, etc.) remains unchanged from BirdNET-Pi, allowing for easy installation and use on Raspberry Pi systems.
 
 Ideal for marine monitoring, bioacoustics projects, and automatic detection of whales via the S10 whistle.
 
-Features
-24/7 recording and S10 whistle analysis using your PyTorch (ResNet18) model
+## Features
+- 24/7 recording and S10 whistle analysis using PyTorch (ResNet18) model
 
-Automatic extraction of clips when S10 whistles are detected
+- Automatic extraction of clips when S10 whistles are detected
 
-Web interface for visualization and downloading of results
+- Web interface for visualization and downloading of results
 
-Results stored in a local SQLite3 database
+- Results stored in a local SQLite3 database
 
-Live audio streaming
+- Live audio streaming
 
-Spectrogram visualization for detected events
+- Spectrogram visualization for detected events
 
-All the proven and stable BirdNET-Pi infrastructure, now adapted for whales
+- All the proven and stable BirdNET-Pi infrastructure, now adapted for whales
 
 
 ## Requirements
