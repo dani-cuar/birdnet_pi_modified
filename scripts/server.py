@@ -34,6 +34,20 @@ from torchvision import models
 import logging
 import sys
 
+from collections import deque
+
+S10_LABEL = "S10"
+S10_THRESHOLD = 0.8         # Score mínimo para considerar S10 (ajústalo si hace falta)
+WINDOW_SECONDS = 120        # 2 minutos
+S10_COUNT_TRIGGER = 10      # Número de S10 para alertar
+
+s10_history = deque()
+last_alert_time = 0
+
+from sim800c.sim800c import Sim800C
+
+
+# gsm = Sim800C(serial_port="/dev/ttyUSB0", baudrate=9600, bootup=True)
 #################################
 
 HEADER = 64
@@ -51,28 +65,28 @@ except:
     time.sleep(5)
     
 # =============== CONFIG LOGGING ====================
-# log_dir = '/home/pi/BirdNET-Pi/logs'
-# if not os.path.exists(log_dir):
-#     os.makedirs(log_dir)
+log_dir = '/home/pi/BirdNET-Pi/logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
 
-# # # Configurar el archivo de log
-# log_filename = os.path.join(log_dir, 'server_log.txt')
+# # Configurar el archivo de log
+log_filename = os.path.join(log_dir, 'server_alert_log.txt')
 
-# # Configuración de logging
-# logging.basicConfig(
-#     level=logging.DEBUG,
-#     format='%(asctime)s - %(levelname)s - %(message)s',         # <--- clave
-#     datefmt='%Y-%m-%d %H:%M:%S',
-#     handlers=[
-#         logging.FileHandler(log_filename),
-#         # logging.StreamHandler()
-#     ]
-# )
+# Configuración de logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',         # <--- clave
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[
+        logging.FileHandler(log_filename),
+        # logging.StreamHandler()
+    ]
+)
 
 
-# # Crea un StreamHandler para que los logs se impriman en la consola
-# console_handler = logging.StreamHandler()
-# logging.getLogger().addHandler(console_handler)
+# Crea un StreamHandler para que los logs se impriman en la consola
+console_handler = logging.StreamHandler()
+logging.getLogger().addHandler(console_handler)
 # # ====================================================
 
 # Open most recent Configuration and grab DB_PWD as a python variable
@@ -568,6 +582,24 @@ def handle_client(conn, addr):
 
                                 # File_Name = Com_Name.replace(" ", "_") + '-' + Confidence + '-' + \
                                 #         Date.replace("/", "-") + '-birdnet-' + Time + audiofmt
+
+                                # ---- Lógica de alerta S10 ----
+                                if label == S10_LABEL and score >= S10_THRESHOLD:
+                                    now_time = time.time()
+                                    s10_history.append(now_time)
+                                    # Elimina del historial las detecciones que ya salieron de la ventana de 2 minutos
+                                    while s10_history and now_time - s10_history[0] > WINDOW_SECONDS:
+                                        s10_history.popleft()
+                                    # Si hay suficientes S10 y la última alerta fue fuera de la ventana, alerta y actualiza el tiempo
+                                    global last_alert_time
+                                    if len(s10_history) >= S10_COUNT_TRIGGER and now_time - last_alert_time > WINDOW_SECONDS:
+                                        logging.info(f"ALERTA: {len(s10_history)} S10 detectados en los últimos {WINDOW_SECONDS} segundos")
+                                        try:
+                                            # gsm.send_sms("+573001234567", "10 S10 detectados")
+                                            logging.info("SMS de alerta enviado correctamente")
+                                        except Exception as e:
+                                            logging.error(f"Error al enviar SMS de alerta: {e}")
+                                        last_alert_time = now_time
 
                                 #Connect to SQLite Database
                                 try: 

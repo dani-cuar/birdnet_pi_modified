@@ -9,7 +9,7 @@ IdentifiedSoFar.txt.bak
 Birders_Guide_Installer_Configuration.txt
 *.pyo
 __pycache__/
-
+sim800c/
 
 # Logs y temporales
 *.log
@@ -19,7 +19,7 @@ analyzing_now.txt
 tiempos_procesamiento.log
 firstrun.ini
 infer_times.log
-
+server_alert_log.txt
 # Otros archivos temporales y bases de datos
 scripts/lastrun.txt
 scripts/thisrun.txt

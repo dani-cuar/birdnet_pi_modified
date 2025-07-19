@@ -7,8 +7,9 @@ Type=simple
 RestartSec=10
 User=pi
 WorkingDirectory=/home/pi/BirdNET-Pi/scripts
-ExecStart=/home/pi/BirdNET-Pi/birdnet/bin/python3 /home/pi/BirdNET-Pi/scripts/server.py
+Environment="PYTHONPATH=/home/pi/BirdNET-Pi/sim800c:/home/pi/BirdNET-Pi/birdnet/lib/python3.9/site-packages"
 Environment="PATH=/home/pi/BirdNET-Pi/birdnet/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/pi/BirdNET-Pi/birdnet/bin/python3 /home/pi/BirdNET-Pi/scripts/server.py
 #ExecStart=/usr/local/bin/server.py
 [Install]
 WantedBy=multi-user.target
