@@ -42,6 +42,15 @@ curl -s https://raw.githubusercontent.com/dani-cuar/birdnet_pi_modified/stable/n
 ```
 The installer takes care of any and all necessary updates, so you can run that as the very first command upon the first boot, if you'd like.
 
+## Downloading the Model
+Note:
+The custom ResNet18 model for whale S10 whistle detection is not included in this repository due to its file size.
+
+To use this system, you must manually download the model and place it in the model/ directory:
+
+Download the model file (resnet18_whales.pth) from this link
+https://drive.google.com/file/d/1KzXuzvQvqY4L0hXOec7HAJr0TYzUWqzm/view?usp=drive_link
+
 ## Access
 The BirdNET-Pi can be accessed from any web browser on the same network:
 - http://birdnetpi.local
