@@ -1,0 +1,12 @@
+[Unit]
+Description=BirdNET Analysis
+After=birdnet_server.service
+Requires=birdnet_server.service
+[Service]
+Restart=always
+Type=simple
+RestartSec=2
+User=pi
+ExecStart=/usr/local/bin/birdnet_analysis.sh
+[Install]
+WantedBy=multi-user.target

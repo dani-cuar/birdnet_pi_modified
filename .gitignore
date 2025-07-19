@@ -7,3 +7,17 @@ birdnet.conf
 IdentifiedSoFar.txt
 IdentifiedSoFar.txt.bak
 Birders_Guide_Installer_Configuration.txt
+*.pyo
+__pycache__/
+
+
+# Logs y temporales
+*.log
+*.ini
+*.db
+analyzing_now.txt
+tiempos_procesamiento.log
+firstrun.ini
+infer_times.log
+
+

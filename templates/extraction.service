@@ -1,0 +1,10 @@
+[Unit]
+Description=BirdNET BirdSound Extraction
+[Service]
+Restart=on-failure
+RestartSec=3
+Type=simple
+User=pi
+ExecStart=/usr/bin/env bash -c 'while true;do extract_new_birdsounds.sh;sleep 3;done'
+[Install]
+WantedBy=multi-user.target

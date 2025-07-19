@@ -1,0 +1,1 @@
+/home/pi/BirdNET-Pi/exclude_species_list.txt

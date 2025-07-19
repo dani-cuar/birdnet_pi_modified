@@ -6,7 +6,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors',1);
 
-$filename = './scripts/labels.txt';
+// $filename = './scripts/labels.txt';
+$filename = './scripts/labels_whale.txt';
 $eachlines = file($filename, FILE_IGNORE_NEW_LINES);
 
 ?>

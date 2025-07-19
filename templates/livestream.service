@@ -1,0 +1,13 @@
+[Unit]
+Description=BirdNET-Pi Live Stream
+After=network-online.target
+Requires=network-online.target
+[Service]
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Restart=always
+Type=simple
+RestartSec=3
+User=pi
+ExecStart=/usr/local/bin/livestream.sh
+[Install]
+WantedBy=multi-user.target

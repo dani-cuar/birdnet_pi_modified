@@ -1,3 +1,4 @@
+#!/home/pi/BirdNET-Pi/birdnet/bin/python3
 import socket 
 import threading
 import os
@@ -25,6 +26,11 @@ import pytz
 from tzlocal import get_localzone
 from pathlib import Path
 
+########## AGREGADO #############
+import torch
+import torch.nn.functional as F
+from torchvision import models
+#################################
 
 HEADER = 64
 PORT = 5050
@@ -48,39 +54,73 @@ with open(userDir + '/BirdNET-Pi/scripts/thisrun.txt', 'r') as f:
     this_run = f.readlines()
     audiofmt = "." + str(str(str([i for i in this_run if i.startswith('AUDIOFMT')]).split('=')[1]).split('\\')[0])
 
+############### AGREGADO ####################################
+def build_model(num_classes: int, remove_initial_maxpool: bool = True):
+    m = models.resnet18(pretrained=False)
+    if remove_initial_maxpool:
+        m.maxpool = torch.nn.Identity()
+    in_f = m.fc.in_features
+    m.fc = torch.nn.Linear(in_f, num_classes)
+    return m
+#############################################################
 
 def loadModel():
 
-    global INPUT_LAYER_INDEX
-    global OUTPUT_LAYER_INDEX
-    global MDATA_INPUT_INDEX
+    ########## ORIGINAL ##########
+    # global INPUT_LAYER_INDEX
+    # global OUTPUT_LAYER_INDEX
+    # global MDATA_INPUT_INDEX
     global CLASSES
+    ##############################
+    global model # agregado
 
     print('LOADING TF LITE MODEL...', end=' ')
 
+    ################# ORIGINAL #######################
+
     # Load TFLite model and allocate tensors.
-    modelpath = userDir + '/BirdNET-Pi/model/BirdNET_6K_GLOBAL_MODEL.tflite'
-    myinterpreter = tflite.Interpreter(model_path=modelpath,num_threads=2)
-    myinterpreter.allocate_tensors()
+    # modelpath = userDir + '/BirdNET-Pi/model/BirdNET_6K_GLOBAL_MODEL.tflite'
+    # myinterpreter = tflite.Interpreter(model_path=modelpath,num_threads=2)
+    # myinterpreter.allocate_tensors()
 
-    # Get input and output tensors.
-    input_details = myinterpreter.get_input_details()
-    output_details = myinterpreter.get_output_details()
+    # # Get input and output tensors.
+    # input_details = myinterpreter.get_input_details()
+    # output_details = myinterpreter.get_output_details()
 
-    # Get input tensor index
-    INPUT_LAYER_INDEX = input_details[0]['index']
-    MDATA_INPUT_INDEX = input_details[1]['index']
-    OUTPUT_LAYER_INDEX = output_details[0]['index']
+    # # Get input tensor index
+    # INPUT_LAYER_INDEX = input_details[0]['index']
+    # MDATA_INPUT_INDEX = input_details[1]['index']
+    # OUTPUT_LAYER_INDEX = output_details[0]['index']
 
-    # Load labels
+    # # Load labels
+    # CLASSES = []
+    # with open(userDir + '/BirdNET-Pi/model/labels.txt', 'r') as lfile:
+    #     for line in lfile.readlines():
+    #         CLASSES.append(line.replace('\n', ''))
+
+    # print('DONE!')
+
+    # return myinterpreter
+
+    ################## AGREGADO ################################
+    model_path = userDir + '/BirdNET-Pi/model/resnet18_whales.pth' 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = build_model(2, remove_initial_maxpool=True)  # Aquí 2 es el número de clases
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device).eval()  # Colocar el modelo en modo de inferencia
+
+    # Cargar las etiquetas (si están en un archivo de texto similar al original)
     CLASSES = []
-    with open(userDir + '/BirdNET-Pi/model/labels.txt', 'r') as lfile:
+    with open(userDir + '/BirdNET-Pi/model/labels_whale.txt', 'r') as lfile:
         for line in lfile.readlines():
-            CLASSES.append(line.replace('\n', ''))
+            CLASSES.append(line.strip())  # Elimina saltos de línea
 
-    print('DONE!')
+    print('¡Modelo cargado con éxito!')
 
-    return myinterpreter
+    return model
+    ###########################################################
+
 
 def loadCustomSpeciesList(path):
 
@@ -113,19 +153,76 @@ def splitSignal(sig, rate, overlap, seconds=3.0, minlen=1.5):
 
     return sig_splits
 
-def readAudioData(path, overlap, sample_rate=48000):
+################## AGREGADO #########################################
+
+class AudioPreprocessor:
+    def __init__(self, fs=6250, n_fft=512, overlap=0.75, fmin=300, fmax=600):
+        self.fs = fs
+        self.n_fft = n_fft
+        self.hop_len = int(n_fft * (1 - overlap))
+        self.window = torch.hann_window(n_fft)
+        freqs = torch.fft.rfftfreq(n_fft, d=1/fs)
+        self.freq_mask = (freqs >= fmin) & (freqs <= fmax)
+
+    def __call__(self, wav_t: torch.Tensor) -> torch.Tensor:
+        # wav_t: 1-D tensor a fs de self.fs
+        stft = torch.stft(wav_t, n_fft=self.n_fft, hop_length=self.hop_len,
+                          window=self.window, return_complex=True)
+        spec = torch.abs(stft)[self.freq_mask]  # (n_bins, n_frames)
+        med = torch.median(spec, dim=-1, keepdim=True)[0]
+        spec = spec / (med + 1e-8)
+        mn, mx = spec.min(), spec.max()
+        spec = (spec - mn) / (mx - mn + 1e-8)
+        return spec.unsqueeze(0)  # shape (1, n_bins, n_frames)
+#####################################################################
+
+def readAudioData(path, overlap, sample_rate=6250): #sr original 48000
 
     print('READING AUDIO DATA...', end=' ', flush=True)
 
+    ############# ORIGINAL #######################
     # Open file with librosa (uses ffmpeg or libav)
-    sig, rate = librosa.load(path, sr=sample_rate, mono=True, res_type='kaiser_fast')
+    # sig, rate = librosa.load(path, sr=sample_rate, mono=True, res_type='kaiser_fast')
 
-    # Split audio into 3-second chunks
-    chunks = splitSignal(sig, rate, overlap)
+    # # Split audio into 3-second chunks
+    # chunks = splitSignal(sig, rate, overlap)
 
-    print('DONE! READ', str(len(chunks)), 'CHUNKS.')
+    # print('DONE! READ', str(len(chunks)), 'CHUNKS.')
 
+    # return chunks
+    ##############################################
+
+    ############# AGREGADO ##############################
+    # Cargar el archivo de audio
+    sig, rate = torchaudio.load(path)
+
+    # Remuestrear el audio si la frecuencia de muestreo es diferente a la esperada
+    if rate != sample_rate:
+        sig = torchaudio.transforms.Resample(rate, sample_rate)(sig)
+
+    # Dividir el audio en fragmentos de 2 segundos
+    seg_len = sample_rate * 2  # 2 segundos
+    n_segs = math.ceil(sig.size(1) / seg_len)
+
+    prep = AudioPreprocessor()
+    chunks = []
+    for i in range(n_segs):
+        start = i * seg_len
+        end = start + seg_len
+        seg = sig[:, start:end]
+
+        # Rellenar con ceros si el último fragmento es más corto
+        if seg.size(1) < seg_len:
+            pad_amt = seg_len - seg.size(1)
+            seg = F.pad(seg, (0, pad_amt))
+
+        # Preparar el espectrograma
+        spec = prep(seg)  # (1, n_bins, n_frames)
+        chunks.append(spec)
+
+    print('Hecho! Leído', len(chunks), 'fragmentos.')
     return chunks
+    ######################################################
 
 def convertMetadata(m):
 
@@ -148,42 +245,68 @@ def custom_sigmoid(x, sensitivity=1.0):
     return 1 / (1.0 + np.exp(-sensitivity * x))
 
 def predict(sample, sensitivity):
-    global INTERPRETER
-    # Make a prediction
-    INTERPRETER.set_tensor(INPUT_LAYER_INDEX, np.array(sample[0], dtype='float32'))
-    INTERPRETER.set_tensor(MDATA_INPUT_INDEX, np.array(sample[1], dtype='float32'))
-    INTERPRETER.invoke()
-    prediction = INTERPRETER.get_tensor(OUTPUT_LAYER_INDEX)[0]
 
-    # Apply custom sigmoid
-    p_sigmoid = custom_sigmoid(prediction, sensitivity)
+    ############### ORIGINAL ############################
+#     global INTERPRETER
+#     # Make a prediction
+#     INTERPRETER.set_tensor(INPUT_LAYER_INDEX, np.array(sample[0], dtype='float32'))
+#     INTERPRETER.set_tensor(MDATA_INPUT_INDEX, np.array(sample[1], dtype='float32'))
+#     INTERPRETER.invoke()
+#     prediction = INTERPRETER.get_tensor(OUTPUT_LAYER_INDEX)[0]
 
-    # Get label and scores for pooled predictions
-    p_labels = dict(zip(CLASSES, p_sigmoid))
+#     # Apply custom sigmoid
+#     p_sigmoid = custom_sigmoid(prediction, sensitivity)
 
-    # Sort by score
-    p_sorted = sorted(p_labels.items(), key=operator.itemgetter(1), reverse=True)
+#     # Get label and scores for pooled predictions
+#     p_labels = dict(zip(CLASSES, p_sigmoid))
 
-    # Remove species that are on blacklist
-    for i in range(min(10, len(p_sorted))):
-        if p_sorted[i][0] in ['Non-bird_Non-bird', 'Noise_Noise']:
-            p_sorted[i] = (p_sorted[i][0], 0.0)
-        if p_sorted[i][0]=='Human_Human':
-            print("HUMAN SCORE:",str(p_sorted[i]))
-            HUMAN_FLAG=True
-            with open(userDir + '/BirdNET-Pi/HUMAN.txt', 'a') as rfile:
-                rfile.write(str(datetime.datetime.now())+str(p_sorted[i])+ '\n')
-#             date_stamp=datetime.datetime.now().strftime("%d_%m_%y_%H:%M:%S")
-# 
-#             sf.write('./home/*/human_sample.wav',np.random.randn(10,2) , 44100) #sample[0]
+#     # Sort by score
+#     p_sorted = sorted(p_labels.items(), key=operator.itemgetter(1), reverse=True)
 
-    # Only return first the top ten results
-    #INCREASE THIS TO SEE IF HUMAN IS DETECTED MORE RELIABLY
-#    print('P_SORTED-------', p_sorted)
-    return p_sorted[:100]
+#     # Remove species that are on blacklist
+#     for i in range(min(10, len(p_sorted))):
+#         if p_sorted[i][0] in ['Non-bird_Non-bird', 'Noise_Noise']:
+#             p_sorted[i] = (p_sorted[i][0], 0.0)
+#         if p_sorted[i][0]=='Human_Human':
+#             print("HUMAN SCORE:",str(p_sorted[i]))
+#             HUMAN_FLAG=True
+#             with open(userDir + '/BirdNET-Pi/HUMAN.txt', 'a') as rfile:
+#                 rfile.write(str(datetime.datetime.now())+str(p_sorted[i])+ '\n')
+# #             date_stamp=datetime.datetime.now().strftime("%d_%m_%y_%H:%M:%S")
+# # 
+# #             sf.write('./home/*/human_sample.wav',np.random.randn(10,2) , 44100) #sample[0]
+
+#     # Only return first the top ten results
+#     #INCREASE THIS TO SEE IF HUMAN IS DETECTED MORE RELIABLY
+# #    print('P_SORTED-------', p_sorted)
+#     return p_sorted[:100]
+    ##########################################################
+
+    ####################### AGREGADO #########################
+    global model  # Usamos el modelo cargado
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Preprocesar y enviar al modelo
+    audio_chunk = sample[0].to(device)  # Pasamos el fragmento de audio al dispositivo adecuado
+
+    with torch.no_grad():
+        output = model(audio_chunk)  # Realizamos la inferencia
+        idx = output.argmax(dim=1).item()  # Obtenemos la clase con mayor probabilidad
+
+    # Mapeo de la predicción a las etiquetas 
+    predicted_label = CLASSES[idx]  # Usamos el índice de la predicción para obtener la clase correspondiente
+
+    # Ordenar las predicciones (en este caso solo hay una predicción, pero si fuese necesario)
+    p_labels = {predicted_label: output[0][idx].item()}  # Guardamos la clase y la probabilidad
+
+    return p_labels  # Solo devolvemos la clase y la probabilidad
+
 
 def analyzeAudioData(chunks, lat, lon, week, sensitivity, overlap,):
-    global INTERPRETER
+    # global INTERPRETER #ORIGINAL
+    #### AGREGADO ####
+    global model
+    ##################
 
     detections = {}
     start = time.time()
@@ -198,26 +321,39 @@ def analyzeAudioData(chunks, lat, lon, week, sensitivity, overlap,):
     for c in chunks:
 
         # Prepare as input signal
-        sig = np.expand_dims(c, 0)
+        ######## ORIGINAL #########
+        # sig = np.expand_dims(c, 0)
 
-        # Make prediction
-        p = predict([sig, mdata], sensitivity)
-#        print("PPPPP",p)
-        HUMAN_DETECTED=False
-        #Catch if Human is recognized
-        for x in range(len(p)):
-            if "Human" in p[x][0]:
-#                print("HUMAN DETECTED!!",p[x][0])
-                #clear list
-                HUMAN_DETECTED=True
-                print("CHUNK -----",c)
-         
-        # Save result and timestamp
-        pred_end = pred_start + 3.0
+        # # Make prediction
+        # p = predict([sig, mdata], sensitivity)
+        # print("PPPPP",p)
         
-        if HUMAN_DETECTED == True:
-            p=[('Human_Human',0.0)]*10
-            print("HUMAN DETECTED!!!",p)
+#        
+#         HUMAN_DETECTED=False
+#         #Catch if Human is recognized
+#         for x in range(len(p)):
+#             if "Human" in p[x][0]:
+# #                print("HUMAN DETECTED!!",p[x][0])
+#                 #clear list
+#                 HUMAN_DETECTED=True
+#                 print("CHUNK -----",c)
+         
+#         # Save result and timestamp
+#         pred_end = pred_start + 3.0
+        
+#         if HUMAN_DETECTED == True:
+#             p=[('Human_Human',0.0)]*10
+#             print("HUMAN DETECTED!!!",p)
+        ###########################
+
+        ######### AGREGADO #############
+        sig = c.repeat(1, 3, 1, 1) # c= (1, n_bins, n_frames)
+        p = predict([sig, mdata], sensitivity)
+        ################################
+
+        ######## AGREGADO ###############
+        pred_end = pred_start + 2.0  # Duración de cada fragmento es de 2 segundos
+        #################################
 
         detections[str(pred_start) + ';' + str(pred_end)] = p
         
@@ -441,8 +577,20 @@ def handle_client(conn, addr):
 
 def start():
     # Load model
-    global INTERPRETER, INCLUDE_LIST, EXCLUDE_LIST
-    INTERPRETER = loadModel()
+    # global INTERPRETER, #ORIGINAL
+    global INCLUDE_LIST, EXCLUDE_LIST
+    ### AGREGADO ####
+    global model
+    #################
+
+    #### ORIGINAL ######
+    # INTERPRETER = loadModel()
+    ####################
+
+    ####### AGREGADO ####
+    model = loadModel()
+    #####################
+    
     server.listen()
     print(f"[LISTENING] Server is listening on {SERVER}")
     while True:

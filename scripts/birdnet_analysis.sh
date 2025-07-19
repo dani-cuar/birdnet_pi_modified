@@ -48,31 +48,32 @@ fi
 # Takes one argument:
 #   - {DIRECTORY}
 get_files() {
-  echo "get_files() for ${1:19}"
+  # echo "get_files() for ${1:19}"
   files=($( find ${1} -maxdepth 1 -name '*wav' \
   | sort \
   | awk -F "/" '{print $NF}' ))
   [ -n "${files[1]}" ] && echo "Files loaded"
+  # echo "Archivos encontrados: ${files[@]}"  # Agregar esta línea para verificar los archivos
 }
 
 # Move all files that have been analyzed already into newly created "Analyzed"
 # directory
 # Takes one argument:
 #   - {DIRECTORY}
-move_analyzed() {
-  echo "Starting move_analyzed() for ${1:19}"
-  for i in "${files[@]}";do 
-    j="${i}.csv" 
-    if [ -f "${1}/${j}" ];then
-      if [ ! -d "${1}-Analyzed" ];then
-        mkdir -p "${1}-Analyzed" && echo "'Analyzed' directory created"
-      fi
-      echo "Moving analyzed files to new directory"
-      mv "${1}/${i}" "${1}-Analyzed/"
-      mv "${1}/${j}" "${1}-Analyzed/"
-    fi
-  done
-}
+# move_analyzed() {
+#   # echo "Starting move_analyzed() for ${1:19}"
+#   for i in "${files[@]}";do 
+#     j="${i}.csv" 
+#     if [ -f "${1}/${j}" ];then
+#       if [ ! -d "${1}-Analyzed" ];then
+#         mkdir -p "${1}-Analyzed" && echo "'Analyzed' directory created"
+#       fi
+#       # echo "Moving analyzed files to new directory"
+#       mv "${1}/${i}" "${1}-Analyzed/"
+#       mv "${1}/${j}" "${1}-Analyzed/"
+#     fi
+#   done
+# }
 
 # Run BirdNET-Lite on the WAVE files from get_files()
 # Uses one argument:
@@ -96,8 +97,11 @@ run_analysis() {
   fi
 
   for i in "${files[@]}";do
+    start_time=$(date +%s) #agregado
+    # echo "----------"
+    # echo "Procesando archivo: ${1}/${i}"
     echo "${1}/${i}" > $HOME/BirdNET-Pi/analyzing_now.txt
-    [ -z ${RECORDING_LENGTH} ] && RECORDING_LENGTH=15
+    [ -z ${RECORDING_LENGTH} ] && RECORDING_LENGTH=2
     [ ${RECORDING_LENGTH} == "60" ] && RECORDING_LENGTH=01:00
     FILE_LENGTH="$(ffmpeg -i ${1}/${i} 2>&1 | awk -F. '/Duration/ {print $1}' | cut -d':' -f3-4)"
     [ -z $FILE_LENGTH ] && sleep 1 && continue
@@ -306,6 +310,19 @@ run_analysis() {
         --exclude_list "${EXCLUDE_LIST}" \
         --birdweather_id "${BIRDWEATHER_ID}" 
     fi
+    ######## AGREGADO ###########
+    # Si la salida (CSV) se generó exitosamente:
+    if [ -f "${1}/${i}.csv" ]; then
+        # Crea la carpeta -Analyzed si no existe
+        [ -d "${1}-Analyzed" ] || mkdir -p "${1}-Analyzed"
+        mv "${1}/${i}" "${1}-Analyzed/"
+        mv "${1}/${i}.csv" "${1}-Analyzed/"
+    fi
+    # echo "Finalizó analyze.py para: ${1}/${i}"
+    # sleep 2
+    end_time=$(date +%s)
+    elapsed_s=$((end_time - start_time))
+    echo "Procesado ${i} en ${elapsed_s} s" >> $HOME/BirdNET-Pi/tiempos_procesamiento.log
   done
 }
 
@@ -315,7 +332,7 @@ run_analysis() {
 run_birdnet() {
   echo "Starting run_birdnet() for ${1:19}"
   get_files "${1}"
-  move_analyzed "${1}"
+  # move_analyzed "${1}"
   run_analysis "${1}"
 }
 

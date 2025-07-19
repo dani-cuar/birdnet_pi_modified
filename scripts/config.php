@@ -34,7 +34,8 @@ if ($language != "none"){
   $user = shell_exec("awk -F: '/1000/{print $1}' /etc/passwd");
   $home = shell_exec("awk -F: '/1000/{print $6}' /etc/passwd");
   $home = trim($home);
-  $command = "sudo -u".$user." mv ".$home."/BirdNET-Pi/model/labels.txt ".$home."/BirdNET-Pi/model/labels.txt.old && sudo -u".$user." unzip ".$home."/BirdNET-Pi/model/labels_l18n.zip ".$language." -d ".$home."/BirdNET-Pi/model && sudo -u".$user." mv ".$home."/BirdNET-Pi/model/".$language." ".$home."/BirdNET-Pi/model/labels.txt";
+  // $command = "sudo -u".$user." mv ".$home."/BirdNET-Pi/model/labels.txt ".$home."/BirdNET-Pi/model/labels.txt.old && sudo -u".$user." unzip ".$home."/BirdNET-Pi/model/labels_l18n.zip ".$language." -d ".$home."/BirdNET-Pi/model && sudo -u".$user." mv ".$home."/BirdNET-Pi/model/".$language." ".$home."/BirdNET-Pi/model/labels.txt";
+  $command = "sudo -u".$user." mv ".$home."/BirdNET-Pi/model/labels_whale.txt ".$home."/BirdNET-Pi/model/labels.whale.old && sudo -u".$user." mv ".$home."/BirdNET-Pi/model/labels_whale.txt ".$home."/BirdNET-Pi/model/labels_whale.txt";
   $command_output = `sudo $command`;
   `sudo restart_services.sh`;
 }

@@ -1,0 +1,1 @@
+/home/pi/BirdNET-Pi/model/labels.txt

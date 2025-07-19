@@ -1,15 +1,69 @@
+#!/home/pi/BirdNET-Pi/birdnet/bin/python3
 import argparse
 import socket
+import logging
+import time
+import os
 
 HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 SERVER = "127.0.1.1"
+
 ADDR = (SERVER, PORT)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(ADDR)
+#### ORIGINAL ###########
+# client.connect(ADDR)
+
+####### AGREGADO ##########
+# Configuración de logging
+# log_dir = '/home/pi/BirdNET-Pi/logs'
+# if not os.path.exists(log_dir):
+#     os.makedirs(log_dir)
+
+# # Configurar el archivo de log
+# log_filename = os.path.join(log_dir, 'analyze_log.txt')
+
+# # SOLO archiva logs, NADA en consola
+# logging.basicConfig(
+#     level=logging.DEBUG,
+#     format='%(asctime)s - %(levelname)s - %(message)s',
+#     datefmt='%Y-%m-%d %H:%M:%S',
+#     handlers=[
+#         logging.FileHandler(log_filename),
+#         # logging.StreamHandler()
+#     ]
+# )
+
+try:
+    client.connect(ADDR)
+    # logging.info(f"Connected to server at {ADDR}")
+except Exception as e:
+    logging.error(f"Could not connect to server: {e}")
+    exit(1)
+###########################
+
+# def send(msg):
+#     try:
+#         message = msg.encode(FORMAT)
+#         msg_length = len(message)
+#         send_length = str(msg_length).encode(FORMAT)
+#         send_length += b' ' * (HEADER - len(send_length))
+#         client.send(send_length)
+#         client.send(message)
+#         # Recibir respuesta del servidor
+#         response = client.recv(2048).decode(FORMAT)
+#         logging.info(f"Server response: {response}")
+#         # Enviar mensaje de desconexión después de recibir la respuesta
+#         client.send(DISCONNECT_MESSAGE.encode(FORMAT))
+#         logging.info("Sent DISCONNECT message.")
+#     except Exception as e:
+#         logging.error(f"Error: {e}")
+#     finally:
+#         client.close()
+#         logging.info("Socket closed.")
 
 def send(msg):
     message = msg.encode(FORMAT)
@@ -67,7 +121,7 @@ def main():
     
     send(sockParams)
 
-    send(DISCONNECT_MESSAGE)
+    # send(DISCONNECT_MESSAGE)
                     #time.sleep(3)
 
 ###############################################################################    
