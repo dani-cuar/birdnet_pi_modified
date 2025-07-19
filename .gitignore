@@ -24,6 +24,7 @@ infer_times.log
 scripts/lastrun.txt
 scripts/thisrun.txt
 scripts/birds.db
+BirdDB.txt
 exclude_species_list.txt
 include_species_list.txt
 scripts/exclude_species_list.txt
@@ -38,3 +39,4 @@ env/
 # Instaladores y paquetes grandes
 *.whl
 *.tflite
+
