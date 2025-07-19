@@ -1,6 +1,6 @@
 ## Birdnet- Pi modified 
 
-Introduction
+## Introduction
 This version of BirdNET-Pi preserves the complete infrastructure of BirdNET-Pi (recording, real-time analysis, web interface, clip extraction, database, etc.), but replaces the original recognition model with a custom PyTorch ResNet18 model specifically trained for the detection of whale S10 whistles.
 
 The system still runs on a Raspberry Pi 4, using the power of PyTorch and a ResNet18 model, adapting the BirdNET-Pi workflow for marine bioacoustics.
