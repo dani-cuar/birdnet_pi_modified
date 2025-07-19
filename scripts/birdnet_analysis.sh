@@ -97,7 +97,7 @@ run_analysis() {
   fi
 
   for i in "${files[@]}";do
-    start_time=$(date +%s) #agregado
+    # start_time=$(date +%s) #agregado
     # echo "----------"
     # echo "Procesando archivo: ${1}/${i}"
     echo "${1}/${i}" > $HOME/BirdNET-Pi/analyzing_now.txt
@@ -320,9 +320,9 @@ run_analysis() {
     fi
     # echo "Finalizó analyze.py para: ${1}/${i}"
     # sleep 2
-    end_time=$(date +%s)
-    elapsed_s=$((end_time - start_time))
-    echo "Procesado ${i} en ${elapsed_s} s" >> $HOME/BirdNET-Pi/tiempos_procesamiento.log
+    # end_time=$(date +%s)
+    # elapsed_s=$((end_time - start_time))
+    # echo "Procesado ${i} en ${elapsed_s} s" >> $HOME/BirdNET-Pi/tiempos_procesamiento.log
   done
 }
 

@@ -8,7 +8,7 @@ else
   STAMP="%H:%M:%S"
 fi
 
-[ -z $RECORDING_LENGTH ] && RECORDING_LENGTH=15
+[ -z $RECORDING_LENGTH ] && RECORDING_LENGTH=2
 
 if ! pulseaudio --check;then pulseaudio --start;fi
 

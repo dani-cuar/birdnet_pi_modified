@@ -55,10 +55,10 @@ except:
 # if not os.path.exists(log_dir):
 #     os.makedirs(log_dir)
 
-# # Configurar el archivo de log
+# # # Configurar el archivo de log
 # log_filename = os.path.join(log_dir, 'server_log.txt')
 
-# Configuración de logging
+# # Configuración de logging
 # logging.basicConfig(
 #     level=logging.DEBUG,
 #     format='%(asctime)s - %(levelname)s - %(message)s',         # <--- clave
@@ -70,7 +70,7 @@ except:
 # )
 
 
-# Crea un StreamHandler para que los logs se impriman en la consola
+# # Crea un StreamHandler para que los logs se impriman en la consola
 # console_handler = logging.StreamHandler()
 # logging.getLogger().addHandler(console_handler)
 # # ====================================================
@@ -314,18 +314,18 @@ def predict(sample, sensitivity):
     audio_chunk = sample[0].to(device)  # Pasamos el fragmento de audio al dispositivo adecuado
 
     # === Medir tiempo de inferencia ===
-    start_infer = time.perf_counter()  # Inicio
+    # start_infer = time.perf_counter()  # Inicio
     with torch.no_grad():
         output = model(audio_chunk)  # Realizamos la inferencia
         probs = F.softmax(output, dim=1)
         idx = output.argmax(dim=1).item()  # Obtenemos la clase con mayor probabilidad
 
-    end_infer = time.perf_counter()    # Fin
-    infer_time = end_infer - start_infer
+    # end_infer = time.perf_counter()    # Fin
+    # infer_time = end_infer - start_infer
 
     # === Guardar el tiempo en un log ===
-    with open('/home/pi/BirdNET-Pi/infer_times.log', 'a') as flog:
-        flog.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}, inference_time={infer_time:.4f} seconds\n")
+    # with open('/home/pi/BirdNET-Pi/infer_times.log', 'a') as flog:
+    #     flog.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}, inference_time={infer_time:.4f} seconds\n")
 
     # Mapeo de la predicción a las etiquetas 
     predicted_label = CLASSES[idx]  # Usamos el índice de la predicción para obtener la clase correspondiente
@@ -531,7 +531,8 @@ def handle_client(conn, addr):
                         myReturn += f"{i}-{label}-{score}\n"
                 #   myReturn += str(i) + '-' + str(detections[i][0]) + '\n'
                 
-                with open(userDir + '/BirdNET-Pi/BirdDB.txt', 'a') as rfile:
+                # with open(userDir + '/BirdNET-Pi/BirdDB.txt', 'a') as rfile:
+                with open(userDir + '/BirdNET-Pi/detections_whale.txt', 'a') as rfile:
                     for d in detections:
                         for label, score in detections[d].items():
                             if score >= min_conf and ((label in INCLUDE_LIST or len(INCLUDE_LIST) == 0) and (label not in EXCLUDE_LIST or len(EXCLUDE_LIST) == 0)):
@@ -569,19 +570,39 @@ def handle_client(conn, addr):
                                 #         Date.replace("/", "-") + '-birdnet-' + Time + audiofmt
 
                                 #Connect to SQLite Database
-                                #try: 
-                                con = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/birds.db')
-                                cur = con.cursor()
-                                # Usa label para ambas columnas
-                                Sci_Name = label
-                                Com_Name = label
-                                cur.execute("INSERT INTO detections VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (Date, Time, Sci_Name, Com_Name, str(score), Lat, Lon, Cutoff, Week, Sens, Overlap, File_Name))
+                                try: 
+                                    # logger.info("PRUEBA: llegué aquí al logger")
+                                    # con = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/birds.db')
+                                    con = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/whale_detections.db')
+                                    cur = con.cursor()
 
-                                con.commit()
-                                con.close()
-                                #except:
-                                #    print("Database busy")
-                                #    time.sleep(2)
+                                    # Crea la tabla si no existe
+                                    cur.execute("""
+                                        CREATE TABLE IF NOT EXISTS detections (
+                                            Date TEXT,
+                                            Time TEXT,
+                                            Sci_Name TEXT,
+                                            Com_Name TEXT,
+                                            Score TEXT,
+                                            Lat TEXT,
+                                            Lon TEXT,
+                                            Cutoff TEXT,
+                                            Week TEXT,
+                                            Sens TEXT,
+                                            Overlap TEXT,
+                                            File_Name TEXT
+                                        )
+                                    """)
+                                    # Usa label para ambas columnas
+                                    Sci_Name = label
+                                    Com_Name = label
+                                    cur.execute("INSERT INTO detections VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (Date, Time, Sci_Name, Com_Name, str(score), Lat, Lon, Cutoff, Week, Sens, Overlap, File_Name))
+
+                                    con.commit()
+                                    con.close()
+                                except Exception as e:
+                                    logger.error(f"Error while processing client: {e}")
+                                    time.sleep(2)
 
                                 # print(str(current_date) + ';' + str(current_time) + ';' + entry[0].replace('_', ';') + ';' + str(entry[1]) + ';' + str(args.lat) + ';' + str(args.lon) + ';' + str(min_conf) + ';' + str(week) + ';' + str(args.sensitivity) +';' + str(args.overlap) + Com_Name.replace(" ", "_") + '-' + str(score) + '-' + str(current_date) + '-birdnet-' + str(current_time) + audiofmt  + '\n')
                                 # Print con solo label y score

@@ -25,6 +25,7 @@ scripts/lastrun.txt
 scripts/thisrun.txt
 scripts/birds.db
 BirdDB.txt
+detections_whale.txt
 exclude_species_list.txt
 include_species_list.txt
 scripts/exclude_species_list.txt
