@@ -1,50 +1,32 @@
 ## Birdnet- Pi modified 
 
-## Introduction
-BirdNET-Pi is built on the [TFLite version of BirdNET](https://github.com/kahst/BirdNET-Lite) by [**@kahst**](https://github.com/kahst) <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg"></a> using [pre-built TFLite binaries](https://github.com/PINTO0309/TensorflowLite-bin) by [**@PINTO0309**](https://github.com/PINTO0309) . It is able to recognize bird sounds from a USB sound card in realtime and share its data with the rest of the world.
+Introduction
+This version of BirdNET-Pi preserves the complete infrastructure of BirdNET-Pi (recording, real-time analysis, web interface, clip extraction, database, etc.), but replaces the original recognition model with a custom PyTorch ResNet18 model specifically trained for the detection of whale S10 whistles.
 
-Check out birds from around the world
-- [BirdWeather](https://app.birdweather.com)<br>
-- [My test system in Virginia, United States](https://virginia.birdnetpi.com)<br>
-- [BirdNET-Pi running on a Raspberry Pi 0W2!!](https://pi0w2.birdnetpi.com:8443) see the [RPi0W2 Installation Guide for more info](https://github.com/mcguirepr89/BirdNET-Pi/wiki/RPi0W2-Installation-Guide)<br>
-- [NatureStation.net in Johannesburg, South Africa](https://joburg.birdnetpi.com)<br>
-- [BirdNET-Pi in Öringe, Tyresö, Sweden](https://tyreso.birdnetpi.com)<br>
-- [Private Nature Garden, Grevenbroich, Germany](http://grevenbroich-elsen.birdnetpi.com)<br>
-- [Norman, Oklahoma, United States](https://normanok.birdnetpi.com)<br>
+The system still runs on a Raspberry Pi 4, using the power of PyTorch and a ResNet18 model, adapting the BirdNET-Pi workflow for marine bioacoustics.
 
-[Share your installation!!](https://github.com/mcguirepr89/BirdNET-Pi/wiki/Sharing-Your-BirdNET-Pi)
+Main Differences in This Version
+The original BirdNET-Lite (TFLite) model has been replaced by a custom PyTorch (ResNet18) model to identify whale S10 whistles.
 
-Currently listening in these countries . . . that I know of . . .
-- The United States
-- Germany
-- South Africa
-- France
-- Austria
-- Sweden
-- Scotland
-- Norway
-- England
-- Italy
-- Finland
-- Australia
+The rest of the infrastructure (recording, web interface, databases, clip extraction, etc.) remains unchanged from BirdNET-Pi, allowing for easy installation and use on Raspberry Pi systems.
 
-If your installation isn't in one of the countries listed above, please let me know so that I can add your country to the list! Let me know either in a GitHub issue, or [email me](mailto:mcguirepr89@gmail.com) and let me know where your BirdNET-Pi is listening.
+Ideal for marine monitoring, bioacoustics projects, and automatic detection of whales via the S10 whistle.
 
-## Features
-* 24/7 recording and BirdNET-Lite analysis
-* [BirdWeather](https://app.birdweather.com) integration -- you can request a BirdWeather ID from BirdNET-Pi's "Tools" > "Settings" page
-* Web interface access to all data and logs
-* Web Terminal
-* [Tiny File Manager](https://tinyfilemanager.github.io/)
-* FTP server included
-* Automatic extraction of detected data (creating audio clips of detected bird sounds)
-* Spectrograms available for all extractions
-* SQLite3 Database
-* Live audio stream
-* Adminer database maintenance
-* [phpSysInfo](https://github.com/phpsysinfo/phpsysinfo)
-* New species mobile notifications from [Pushed.co](https://pushed.co/quick-start-guide) (for iOS users only)
-* Localization supported
+Features
+24/7 recording and S10 whistle analysis using your PyTorch (ResNet18) model
+
+Automatic extraction of clips when S10 whistles are detected
+
+Web interface for visualization and downloading of results
+
+Results stored in a local SQLite3 database
+
+Live audio streaming
+
+Spectrogram visualization for detected events
+
+All the proven and stable BirdNET-Pi infrastructure, now adapted for whales
+
 
 ## Requirements
 * A Raspberry Pi 4B or Raspberry Pi 3B+ (The 3B+ must run on RaspiOS-ARM64-**Lite**)
