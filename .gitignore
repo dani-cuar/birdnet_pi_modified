@@ -20,4 +20,21 @@ tiempos_procesamiento.log
 firstrun.ini
 infer_times.log
 
+# Otros archivos temporales y bases de datos
+scripts/lastrun.txt
+scripts/thisrun.txt
+scripts/birds.db
+exclude_species_list.txt
+include_species_list.txt
+scripts/exclude_species_list.txt
+scripts/include_species_list.txt
+scripts/labels.txt
 
+# Ambientes virtuales
+birdnet/
+venv/
+env/
+
+# Instaladores y paquetes grandes
+*.whl
+*.tflite
