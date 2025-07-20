@@ -44,7 +44,7 @@ S10_COUNT_TRIGGER = 10      # Número de S10 para alertar
 s10_history = deque()
 last_alert_time = 0
 
-from sim800c.sim800c import Sim800C
+# from sim800c.sim800c import Sim800C
 
 
 # gsm = Sim800C(serial_port="/dev/ttyUSB0", baudrate=9600, bootup=True)
@@ -423,7 +423,7 @@ def writeResultsToFile(detections, min_conf, path):
 
 def handle_client(conn, addr):
     # Crea un logger específico para este hilo
-    # logger = logging.getLogger(f"Client-{addr}")
+    logger = logging.getLogger(f"Client-{addr}")
     # logger.info(f"New connection from {addr}")
     global INCLUDE_LIST
     global EXCLUDE_LIST
@@ -583,6 +583,36 @@ def handle_client(conn, addr):
                                 # File_Name = Com_Name.replace(" ", "_") + '-' + Confidence + '-' + \
                                 #         Date.replace("/", "-") + '-birdnet-' + Time + audiofmt
 
+                                #Connect to SQLite Database
+                                # con = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/birds.db')
+                                con = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/detections_whale.db')
+                                cur = con.cursor()
+
+                                # Crea la tabla si no existe
+                                cur.execute("""
+                                    CREATE TABLE IF NOT EXISTS detections (
+                                        Date TEXT,
+                                        Time TEXT,
+                                        Sci_Name TEXT,
+                                        Com_Name TEXT,
+                                        Score TEXT,
+                                        Lat TEXT,
+                                        Lon TEXT,
+                                        Cutoff TEXT,
+                                        Week TEXT,
+                                        Sens TEXT,
+                                        Overlap TEXT,
+                                        File_Name TEXT
+                                    )
+                                """)
+                                # Usa label para ambas columnas
+                                Sci_Name = label
+                                Com_Name = label
+                                cur.execute("INSERT INTO detections VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (Date, Time, Sci_Name, Com_Name, str(score), Lat, Lon, Cutoff, Week, Sens, Overlap, File_Name))
+
+                                con.commit()
+                                con.close()
+
                                 # ---- Lógica de alerta S10 ----
                                 if label == S10_LABEL and score >= S10_THRESHOLD:
                                     now_time = time.time()
@@ -599,42 +629,7 @@ def handle_client(conn, addr):
                                             logging.info("SMS de alerta enviado correctamente")
                                         except Exception as e:
                                             logging.error(f"Error al enviar SMS de alerta: {e}")
-                                        last_alert_time = now_time
-
-                                #Connect to SQLite Database
-                                try: 
-                                    # logger.info("PRUEBA: llegué aquí al logger")
-                                    # con = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/birds.db')
-                                    con = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/whale_detections.db')
-                                    cur = con.cursor()
-
-                                    # Crea la tabla si no existe
-                                    cur.execute("""
-                                        CREATE TABLE IF NOT EXISTS detections (
-                                            Date TEXT,
-                                            Time TEXT,
-                                            Sci_Name TEXT,
-                                            Com_Name TEXT,
-                                            Score TEXT,
-                                            Lat TEXT,
-                                            Lon TEXT,
-                                            Cutoff TEXT,
-                                            Week TEXT,
-                                            Sens TEXT,
-                                            Overlap TEXT,
-                                            File_Name TEXT
-                                        )
-                                    """)
-                                    # Usa label para ambas columnas
-                                    Sci_Name = label
-                                    Com_Name = label
-                                    cur.execute("INSERT INTO detections VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (Date, Time, Sci_Name, Com_Name, str(score), Lat, Lon, Cutoff, Week, Sens, Overlap, File_Name))
-
-                                    con.commit()
-                                    con.close()
-                                except Exception as e:
-                                    logger.error(f"Error while processing client: {e}")
-                                    time.sleep(2)
+                                        last_alert_time = now_time  
 
                                 # print(str(current_date) + ';' + str(current_time) + ';' + entry[0].replace('_', ';') + ';' + str(entry[1]) + ';' + str(args.lat) + ';' + str(args.lon) + ';' + str(min_conf) + ';' + str(week) + ';' + str(args.sensitivity) +';' + str(args.overlap) + Com_Name.replace(" ", "_") + '-' + str(score) + '-' + str(current_date) + '-birdnet-' + str(current_time) + audiofmt  + '\n')
                                 # Print con solo label y score

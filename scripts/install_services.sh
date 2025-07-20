@@ -66,7 +66,11 @@ Restart=always
 Type=simple
 RestartSec=10
 User=${USER}
-ExecStart=/usr/local/bin/server.py
+WorkingDirectory=/home/pi/BirdNET-Pi/scripts
+Environment="PYTHONPATH=/home/pi/BirdNET-Pi/sim800c:/home/pi/BirdNET-Pi/birdnet/lib/python3.9/site-packages"
+Environment="PATH=/home/pi/BirdNET-Pi/birdnet/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/pi/BirdNET-Pi/birdnet/bin/python3 /home/pi/BirdNET-Pi/scripts/server.py
+# ExecStart=/usr/local/bin/server.py
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -137,15 +141,23 @@ create_necessary_dirs() {
 }
 
 generate_BirdDB() {
-  echo "Generating BirdDB.txt"
-  if ! [ -f $my_dir/BirdDB.txt ];then
-    sudo -u ${USER} touch $my_dir/BirdDB.txt
-    echo "Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap" | sudo -u ${USER} tee -a $my_dir/BirdDB.txt
-  elif ! grep Date $my_dir/BirdDB.txt;then
-    sudo -u ${USER} sed -i '1 i\Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap' $my_dir/BirdDB.txt
+  # echo "Generating BirdDB.txt"
+  echo "Generating detections_whale.txt"
+  # if ! [ -f $my_dir/BirdDB.txt ];then
+  if ! [ -f $my_dir/detections_whale.txt ];then
+    # sudo -u ${USER} touch $my_dir/BirdDB.txt
+    sudo -u ${USER} touch $my_dir/detections_whale.txt
+    # echo "Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap" | sudo -u ${USER} tee -a $my_dir/BirdDB.txt
+    echo "Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap" | sudo -u ${USER} tee -a $my_dir/detections_whale.txt
+  # elif ! grep Date $my_dir/BirdDB.txt;then
+  elif ! grep Date $my_dir/detections_whale.txt;then
+    # sudo -u ${USER} sed -i '1 i\Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap' $my_dir/BirdDB.txt
+    sudo -u ${USER} sed -i '1 i\Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap' $my_dir/detections_whale.txt
   fi
-  ln -sf $my_dir/BirdDB.txt ${my_dir}/BirdDB.txt &&
-  chown $USER:$USER ${my_dir}/BirdDB.txt && chmod g+rw ${my_dir}/BirdDB.txt
+  # ln -sf $my_dir/BirdDB.txt ${my_dir}/BirdDB.txt &&
+  ln -sf $my_dir/BirdDB.txt ${my_dir}/detections_whale.txt &&
+  # chown $USER:$USER ${my_dir}/BirdDB.txt && chmod g+rw ${my_dir}/BirdDB.txt
+  chown $USER:$USER ${my_dir}/BirdDB.txt && chmod g+rw ${my_dir}/detections_whale.txt
 }
 
 set_login() {
