@@ -31,7 +31,7 @@ Ideal for marine monitoring, bioacoustics projects, and automatic detection of w
 ## Requirements
 * A Raspberry Pi 4B or Raspberry Pi 3B+ (The 3B+ must run on RaspiOS-ARM64-**Lite**)
 * An SD Card with the **_64-bit version of RaspiOS_** installed (please use Bullseye) -- Lite is recommended, but the installation works on RaspiOS-ARM64-Full as well. [(Download the latest here)](https://downloads.raspberrypi.org/raspios_lite_arm64/images/)
-* A USB Microphone or Sound Card
+* A USB Microphone or Sound Card -- u usb interface and a hydrophone
 
 ## Installation
 [A comprehensive installation guide is available here](https://github.com/mcguirepr89/BirdNET-Pi/wiki/Installation-Guide).
