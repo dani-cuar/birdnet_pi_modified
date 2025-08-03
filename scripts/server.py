@@ -636,7 +636,7 @@ def handle_client(conn, addr):
                         # Actualizar el reloj del audio
                         audio_clock += end_sec
                         # logging.info(f"Audio clock: {audio_clock}")
-                        logging.info(f"Tiempo acumu: {audio_clock - window_start_time:.2f}s | S10: {s10_count_window}")
+                        # logging.info(f"Tiempo acumu: {audio_clock - window_start_time:.2f}s | S10: {s10_count_window}")
                         # Si pasaron 2 minutos (120 segundos) desde el inicio de la ventana
                         if audio_clock - window_start_time >= WINDOW_SECONDS:
                             if s10_count_window >= S10_COUNT_TRIGGER:
