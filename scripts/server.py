@@ -41,8 +41,10 @@ S10_THRESHOLD = 0.8         # Score mínimo para considerar S10 (ajústalo si ha
 WINDOW_SECONDS = 120        # 2 minutos
 S10_COUNT_TRIGGER = 10      # Número de S10 para alertar
 
-s10_history = deque()
-last_alert_time = 0
+# Variables de estado
+global s10_count_window, window_start_time
+s10_count_window = 0
+window_start_time = time.time()
 
 # from sim800c.sim800c import Sim800C
 
@@ -421,7 +423,13 @@ def writeResultsToFile(detections, min_conf, path):
     # logging.info(f'DONE! WROTE {rcnt} RESULTS.')
     return
 
+# Estado persistente del sistema de alerta
+audio_clock = 0.0
+window_start_time = 0.0
+s10_count_window = 0
+
 def handle_client(conn, addr):
+    global s10_count_window, window_start_time, audio_clock
     # Crea un logger específico para este hilo
     logger = logging.getLogger(f"Client-{addr}")
     # logger.info(f"New connection from {addr}")
@@ -540,14 +548,18 @@ def handle_client(conn, addr):
                 
                 # Write detections to Database
                 myReturn = ''
+                
                 for i in detections:
                     for label, score in detections[i].items():
                         myReturn += f"{i}-{label}-{score}\n"
                 #   myReturn += str(i) + '-' + str(detections[i][0]) + '\n'
-                
+
                 # with open(userDir + '/BirdNET-Pi/BirdDB.txt', 'a') as rfile:
                 with open(userDir + '/BirdNET-Pi/detections_whale.txt', 'a') as rfile:
                     for d in detections:
+                        start_sec = float(d.split(';')[0])
+                        end_sec = float(d.split(';')[1])
+
                         for label, score in detections[d].items():
                             if score >= min_conf and ((label in INCLUDE_LIST or len(INCLUDE_LIST) == 0) and (label not in EXCLUDE_LIST or len(EXCLUDE_LIST) == 0)):
                                 # rfile.write(str(current_date) + ';' + str(current_time) + ';' + label.replace('_', ';') + ';' \
@@ -615,21 +627,31 @@ def handle_client(conn, addr):
 
                                 # ---- Lógica de alerta S10 ----
                                 if label == S10_LABEL and score >= S10_THRESHOLD:
-                                    now_time = time.time()
-                                    s10_history.append(now_time)
-                                    # Elimina del historial las detecciones que ya salieron de la ventana de 2 minutos
-                                    while s10_history and now_time - s10_history[0] > WINDOW_SECONDS:
-                                        s10_history.popleft()
-                                    # Si hay suficientes S10 y la última alerta fue fuera de la ventana, alerta y actualiza el tiempo
-                                    global last_alert_time
-                                    if len(s10_history) >= S10_COUNT_TRIGGER and now_time - last_alert_time > WINDOW_SECONDS:
-                                        logging.info(f"ALERTA: {len(s10_history)} S10 detectados en los últimos {WINDOW_SECONDS} segundos")
-                                        try:
-                                            # gsm.send_sms("+573001234567", "10 S10 detectados")
-                                            logging.info("SMS de alerta enviado correctamente")
-                                        except Exception as e:
-                                            logging.error(f"Error al enviar SMS de alerta: {e}")
-                                        last_alert_time = now_time  
+                                    # now_time = time.time()
+
+                                    # Incrementar contador de llamados S10 en esta ventana
+                                    s10_count_window += 1
+                                    # logging.info(f"ALERTA: {s10_count_window} detectado")
+
+                        # Actualizar el reloj del audio
+                        audio_clock += end_sec
+                        # logging.info(f"Audio clock: {audio_clock}")
+                        logging.info(f"Tiempo acumu: {audio_clock - window_start_time:.2f}s | S10: {s10_count_window}")
+                        # Si pasaron 2 minutos (120 segundos) desde el inicio de la ventana
+                        if audio_clock - window_start_time >= WINDOW_SECONDS:
+                            if s10_count_window >= S10_COUNT_TRIGGER:
+                                logging.info(f"ALERTA: {s10_count_window} S10 detectados entre segundo {window_start_time} y {audio_clock}")
+                                try:
+                                    # gsm.send_sms("+573001234567", "10 S10 detectados")
+                                    logging.info("SMS de alerta enviado correctamente")
+                                except Exception as e:
+                                    logging.error(f"Error al enviar SMS de alerta: {e}")
+                            else:
+                                logging.info(f"NO ALERTA: Solo {s10_count_window} S10 detectados entre segundo {window_start_time} y {audio_clock}")
+
+                            # Reiniciar ventana
+                            s10_count_window = 0
+                            window_start_time = audio_clock
 
                                 # print(str(current_date) + ';' + str(current_time) + ';' + entry[0].replace('_', ';') + ';' + str(entry[1]) + ';' + str(args.lat) + ';' + str(args.lon) + ';' + str(min_conf) + ';' + str(week) + ';' + str(args.sensitivity) +';' + str(args.overlap) + Com_Name.replace(" ", "_") + '-' + str(score) + '-' + str(current_date) + '-birdnet-' + str(current_time) + audiofmt  + '\n')
                                 # Print con solo label y score
