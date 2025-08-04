@@ -46,10 +46,13 @@ global s10_count_window, window_start_time
 s10_count_window = 0
 window_start_time = time.time()
 
-# from sim800c.sim800c import Sim800C
-
+from sim800c.sim800c import Sim800C
 
 # gsm = Sim800C(serial_port="/dev/ttyUSB0", baudrate=9600, bootup=True)
+# gsm = Sim800C(bootup=False, serial_port="/dev/ttyUSB0")
+# # Inicializa solo la UART y sincroniza AT
+# gsm.init_serial()
+# gsm.at_check_ready()   # debe devolver OK
 #################################
 
 HEADER = 64
@@ -84,11 +87,24 @@ logging.basicConfig(
         # logging.StreamHandler()
     ]
 )
+# ---------------- Logger de tiempos de inferencia ----------------
+inference_logger = logging.getLogger("InferenceTimes")
+inference_handler = logging.FileHandler('/home/pi/BirdNET-Pi/logs/infer_times.log')
+inference_logger.addHandler(inference_handler)
+inference_logger.setLevel(logging.INFO)
+inference_handler.setFormatter(logging.Formatter(
+    '%(asctime)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+))
 
+# evita que suban al root y se escriban en server_alert_log.txt
+inference_logger.propagate = False
 
 # Crea un StreamHandler para que los logs se impriman en la consola
 console_handler = logging.StreamHandler()
 logging.getLogger().addHandler(console_handler)
+
+
 # # ====================================================
 
 # Open most recent Configuration and grab DB_PWD as a python variable
@@ -330,18 +346,20 @@ def predict(sample, sensitivity):
     audio_chunk = sample[0].to(device)  # Pasamos el fragmento de audio al dispositivo adecuado
 
     # === Medir tiempo de inferencia ===
-    # start_infer = time.perf_counter()  # Inicio
+    start_infer = time.perf_counter()  # Inicio
     with torch.no_grad():
         output = model(audio_chunk)  # Realizamos la inferencia
         probs = F.softmax(output, dim=1)
         idx = output.argmax(dim=1).item()  # Obtenemos la clase con mayor probabilidad
 
-    # end_infer = time.perf_counter()    # Fin
-    # infer_time = end_infer - start_infer
+    end_infer = time.perf_counter()    # Fin
+    infer_time = end_infer - start_infer
 
     # === Guardar el tiempo en un log ===
     # with open('/home/pi/BirdNET-Pi/infer_times.log', 'a') as flog:
     #     flog.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}, inference_time={infer_time:.4f} seconds\n")
+    # Se comenta el guardado de tiempo de inferencia
+    # inference_logger.info(f"inference_time={infer_time:.4f} seconds")
 
     # Mapeo de la predicción a las etiquetas 
     predicted_label = CLASSES[idx]  # Usamos el índice de la predicción para obtener la clase correspondiente
@@ -642,11 +660,12 @@ def handle_client(conn, addr):
                             if s10_count_window >= S10_COUNT_TRIGGER:
                                 logging.info(f"ALERTA: {s10_count_window} S10 detectados entre segundo {window_start_time} y {audio_clock}")
                                 try:
-                                    # gsm.send_sms("+573001234567", "10 S10 detectados")
+                                    # gsm.sms.send_sms_message("+526121270531", "ALERTA")
                                     logging.info("SMS de alerta enviado correctamente")
                                 except Exception as e:
                                     logging.error(f"Error al enviar SMS de alerta: {e}")
                             else:
+                                # gsm.sms.send_sms_message("+526121270531", "hola")
                                 logging.info(f"NO ALERTA: Solo {s10_count_window} S10 detectados entre segundo {window_start_time} y {audio_clock}")
 
                             # Reiniciar ventana

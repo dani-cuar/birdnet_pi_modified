@@ -152,7 +152,7 @@ run_analysis() {
         --overlap "${OVERLAP}" \
         --sensitivity "${SENSITIVITY}" \
         --min_conf "${CONFIDENCE}"
-    elif [ -f ${1}/${i} ] && [ -f ${INCLUDELIST} ] && [ ! -f ${EXCLUDE_LIST} ] && [ -z $BIRDWEATHER_ID ];then
+    elif [ -f ${1}/${i} ] && [ -f ${INCLUDE_LIST} ] && [ ! -f ${EXCLUDE_LIST} ] && [ -z $BIRDWEATHER_ID ];then
       echo "analyze.py \
 --i "${1}/${i}" \
 --o "${1}/${i}.csv" \

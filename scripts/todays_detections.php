@@ -11,18 +11,43 @@ if(isset($_POST['display_limit'])) {
   $display_limit = 40;
 }
 
-$db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+// $db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+$db = new SQLite3('./scripts/detections_whale.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+$db->busyTimeout(10000);
 if($db == False){
   echo "Database is busy";
   header("refresh: 0;");
 }
 
-$statement0 = $db->prepare('SELECT Time, Com_Name, Sci_Name, Confidence, File_Name FROM detections WHERE Date == Date(\'now\', \'localtime\') ORDER BY Time DESC LIMIT '.$display_limit.'');
-if($statement0 == False){
-  echo "Database is busy";
-  header("refresh: 0;");
+// AGREGADO
+// 2) Score => Confidence (en porcentaje)
+$confExpr = "ROUND(100.0 * CAST(Score AS REAL))";
+
+// Usa parámetro para el LIMIT
+$sql = "SELECT Time, Com_Name, Sci_Name, $confExpr AS Confidence, File_Name
+        FROM detections
+        WHERE Date = DATE('now','localtime')
+        ORDER BY Time DESC
+        LIMIT :lim";
+
+$statement0 = $db->prepare($sql);
+if (!$statement0) {
+  die("SQL prepare error: " . $db->lastErrorMsg());
 }
+$statement0->bindValue(':lim', $display_limit, SQLITE3_INTEGER);
+
 $result0 = $statement0->execute();
+if (!$result0) {
+  die("SQL execute error: " . $db->lastErrorMsg());
+}
+
+// original
+// $statement0 = $db->prepare('SELECT Time, Com_Name, Sci_Name, Confidence, File_Name FROM detections WHERE Date == Date(\'now\', \'localtime\') ORDER BY Time DESC LIMIT '.$display_limit.'');
+// if($statement0 == False){
+//   echo "Database is busy";
+//   header("refresh: 0;");
+// }
+// $result0 = $statement0->execute();
 
 $statement1 = $db->prepare('SELECT COUNT(*) FROM detections');
 if($statement1 == False){
@@ -48,11 +73,19 @@ if($statement3 == False){
 $result3 = $statement3->execute();
 $hourcount = $result3->fetchArray(SQLITE3_ASSOC);
 
-$statement4 = $db->prepare('SELECT Com_Name, Sci_Name, Time, Confidence FROM detections LIMIT 1');
-if($statement4 == False){
-  echo "Database is busy";
-  header("refresh: 0;");
-}
+$statement4 = $db->prepare(
+  "SELECT Com_Name, Sci_Name, Time,
+          ROUND(100.0 * CAST(Score AS REAL)) AS Confidence
+   FROM detections
+   ORDER BY Date DESC, Time DESC
+   LIMIT 1"
+);
+
+// $statement4 = $db->prepare('SELECT Com_Name, Sci_Name, Time, Confidence FROM detections LIMIT 1');
+// if($statement4 == False){
+//   echo "Database is busy";
+//   header("refresh: 0;");
+// }
 $result4 = $statement4->execute();
 $mostrecent = $result4->fetchArray(SQLITE3_ASSOC);
 

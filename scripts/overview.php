@@ -3,7 +3,8 @@ header("refresh: 300;");
 $myDate = date('Y-m-d');
 $chart = "Combo-$myDate.png";
 
-$db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+// $db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+$db = new SQLite3('./scripts/detections_whale.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
 if($db == False) {
   echo "Database is busy";
   header("refresh: 0;");
@@ -33,7 +34,8 @@ if($statement3 == False) {
 $result3 = $statement3->execute();
 $hourcount = $result3->fetchArray(SQLITE3_ASSOC);
 
-$statement4 = $db->prepare('SELECT Com_Name, Sci_Name, Date, Time, Confidence, File_Name FROM detections ORDER BY Date DESC, Time DESC LIMIT 1');
+// $statement4 = $db->prepare('SELECT Com_Name, Sci_Name, Date, Time, Confidence, File_Name FROM detections ORDER BY Date DESC, Time DESC LIMIT 1');
+$statement4 = $db->prepare('SELECT Com_Name, Sci_Name, Date, Time, ROUND(100.0 * CAST(Score AS REAL)) AS Confidence, File_Name FROM detections ORDER BY Date DESC, Time DESC LIMIT 1');
 if($statement4 == False) {
   echo "Database is busy";
   header("refresh: 0;");

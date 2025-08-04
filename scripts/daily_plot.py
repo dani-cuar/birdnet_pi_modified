@@ -10,8 +10,10 @@ from datetime import datetime
 import textwrap
 
 userDir = os.path.expanduser('~')
-conn = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/birds.db')
-df = pd.read_sql_query("SELECT * from detections", conn)
+# conn = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/birds.db')
+conn = sqlite3.connect(userDir + '/BirdNET-Pi/scripts/detections_whale.db')
+# df = pd.read_sql_query("SELECT * from detections", conn)
+df = pd.read_sql_query("SELECT Date, Time, Com_Name, Sci_Name, ROUND(100.0 * CAST(Score AS REAL)) AS Confidence FROM detections", conn)
 cursor = conn.cursor()
 cursor.execute('SELECT * FROM detections')
 

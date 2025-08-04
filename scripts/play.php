@@ -3,7 +3,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+// $db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+$db = new SQLite3('./scripts/detections_whale.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
 if($db == False){
   echo "Database is busy";
   header("refresh: 0;");
@@ -49,7 +50,8 @@ if(isset($_POST['bydate'])){
   session_start();
   $_SESSION['species'] = $species;
   $statement = $db->prepare("SELECT * FROM detections WHERE Com_Name == \"$species\" ORDER BY Com_Name");
-  $statement3 = $db->prepare("SELECT Date, Time, Sci_Name, MAX(Confidence), File_Name FROM detections WHERE Com_Name == \"$species\" ORDER BY Com_Name");
+  // $statement3 = $db->prepare("SELECT Date, Time, Sci_Name, MAX(Confidence), File_Name FROM detections WHERE Com_Name == \"$species\" ORDER BY Com_Name");
+  $statement3 = $db->prepare("SELECT Date, Time, Sci_Name, ROUND(100.0 * CAST(Score AS REAL)) AS MaxConfidence, File_Name FROM detections WHERE Com_Name == \"$species\" ORDER BY Com_Name");
   if($statement == False || $statement3 == False){
     echo "Database is busy";
     header("refresh: 0;");
@@ -142,7 +144,8 @@ if(isset($_POST['species'])){
       $sciname = preg_replace('/ /', '_', $results['Sci_Name']);
       $sci_name = $results['Sci_Name'];
       $time = $results['Time'];
-      $confidence = $results['Confidence'];
+      // $confidence = $results['Confidence'];
+      $confidence = round(100 * (float)$results['Score']);
       echo "<tr>
         <td>$date $time<br>$confidence<br>
         <video controls poster=\"$filename.png\" preload=\"none\" title=\"$filename\"><source src=\"$filename\"></video></td>

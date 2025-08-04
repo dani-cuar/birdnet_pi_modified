@@ -11,7 +11,12 @@ $theDate = date('Y-m-d');
 $chart = "Combo-$theDate.png";
 $chart2 = "Combo2-$theDate.png";
 
-$db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+// $db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+$db = new SQLite3('./scripts/detections_whale.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+if (!$db) {
+	die('No se pudo abrir la BD: ' . SQLite3::lastErrorMsg());
+  }
+$db->busyTimeout(10000);
 
 $statement1 = $db->prepare("SELECT COUNT(*) FROM detections
 	WHERE Date == \"$theDate\"");
