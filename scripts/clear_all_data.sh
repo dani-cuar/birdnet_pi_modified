@@ -15,7 +15,8 @@ sudo systemctl stop birdnet_server.service
 echo "Removing all data . . . "
 sudo rm -drf "${RECS_DIR}"
 sudo rm -f "${IDFILE}"
-sudo rm -f $(dirname ${my_dir})/BirdDB.txt
+#sudo rm -f $(dirname ${my_dir})/BirdDB.txt
+sudo rm -f $(dirname ${my_dir})/detections_whale.txt
 
 echo "Re-creating necessary directories"
 [ -d ${EXTRACTED} ] || sudo -u ${USER} mkdir -p ${EXTRACTED}
@@ -43,13 +44,17 @@ sudo -u ${USER} ln -fs $(dirname $my_dir)/templates/index_bootstrap.html ${HOME}
 chmod -R g+rw $my_dir
 chmod -R g+rw ${RECS_DIR}
 
-
 echo "Dropping and re-creating database"
 createdb.sh
-echo "Re-generating BirdDB.txt"
-touch $(dirname ${my_dir})/BirdDB.txt
-echo "Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap" > $(dirname ${my_dir})/BirdDB.txt
-ln -sf $(dirname ${my_dir})/BirdDB.txt ${my_dir}/BirdDB.txt
-chown $USER:$USER ${my_dir}/BirdDB.txt && chmod g+rw ${my_dir}/BirdDB.txt
+#echo "Re-generating BirdDB.txt"
+echo "Re-generating detections_whale.txt"
+#touch $(dirname ${my_dir})/BirdDB.txt
+touch $(dirname ${my_dir})/detections_whale.txt
+#echo "Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap" > $(dirname ${my_dir})/BirdDB.txt
+echo "Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap" > $(dirname ${my_dir})/detections_whale.txt
+#ln -sf $(dirname ${my_dir})/BirdDB.txt ${my_dir}/BirdDB.txt
+ln -sf $(dirname ${my_dir})/detections_whale.txt ${my_dir}/detections_whale.txt
+#chown $USER:$USER ${my_dir}/BirdDB.txt && chmod g+rw ${my_dir}/BirdDB.txt
+chown $USER:$USER ${my_dir}/detections_whale.txt && chmod g+rw ${my_dir}/detections_whale.txt
 echo "Restarting services"
 restart_services.sh
