@@ -155,9 +155,9 @@ generate_BirdDB() {
     sudo -u ${USER} sed -i '1 i\Date;Time;Sci_Name;Com_Name;Confidence;Lat;Lon;Cutoff;Week;Sens;Overlap' $my_dir/detections_whale.txt
   fi
   # ln -sf $my_dir/BirdDB.txt ${my_dir}/BirdDB.txt &&
-  ln -sf $my_dir/BirdDB.txt ${my_dir}/detections_whale.txt &&
+  ln -sf $my_dir/detections_whale.txt ${my_dir}/detections_whale.txt &&
   # chown $USER:$USER ${my_dir}/BirdDB.txt && chmod g+rw ${my_dir}/BirdDB.txt
-  chown $USER:$USER ${my_dir}/BirdDB.txt && chmod g+rw ${my_dir}/detections_whale.txt
+  chown $USER:$USER ${my_dir}/detections_whale.txt && chmod g+rw ${my_dir}/detections_whale.txt
 }
 
 set_login() {
