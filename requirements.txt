@@ -11,3 +11,7 @@ pandas
 seaborn
 streamlit
 plotly
+# Librerías de PyTorch
+torch
+torchaudio
+torchvision
