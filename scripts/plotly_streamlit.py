@@ -11,7 +11,8 @@ import sqlite3
 from sqlite3 import Connection
 
 userDir = os.path.expanduser('~')
-URI_SQLITE_DB = userDir + '/BirdNET-Pi/scripts/birds.db'
+#URI_SQLITE_DB = userDir + '/BirdNET-Pi/scripts/birds.db'
+URI_SQLITE_DB = userDir + '/BirdNET-Pi/scripts/detections_whale.db'
 
 st.set_page_config(layout='wide')
 
