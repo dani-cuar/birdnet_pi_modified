@@ -46,7 +46,7 @@ global s10_count_window, window_start_time
 s10_count_window = 0
 window_start_time = time.time()
 
-from sim800c.sim800c import Sim800C
+#from sim800c.sim800c import Sim800C
 
 # gsm = Sim800C(serial_port="/dev/ttyUSB0", baudrate=9600, bootup=True)
 # gsm = Sim800C(bootup=False, serial_port="/dev/ttyUSB0")
