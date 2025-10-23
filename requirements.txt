@@ -12,6 +12,16 @@ seaborn
 streamlit
 plotly
 # Librerías de PyTorch
-torch
+#torch
 torchaudio
-torchvision
+#torchvision
+
+# Librerías de PyTorch:
+# Deben ser instaladas como wheels pre-compilados para aarch64 (ARM64)
+# Estos son ejemplos de URLs de wheels para Python 3.9/ARM64. ¡Verificar la disponibilidad!
+# torch:
+https://github.com/Qengineering/PyTorch-Raspberry-Pi/raw/main/torch-1.12.0a0+2c916298.nv22.04-cp39-cp39-linux_aarch64.whl
+# torchvision:
+https://github.com/Qengineering/PyTorch-Raspberry-Pi/raw/main/torchvision-0.13.0a0+8c63e26-cp39-cp39-linux_aarch64.whl
+# torchaudio: (Si es necesario, verifica una URL similar o elimina si no se usa)
+# torchaudio
