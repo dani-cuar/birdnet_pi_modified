@@ -21,4 +21,4 @@ torchaudio
 # torch:
 https://github.com/Qengineering/PyTorch-Raspberry-Pi/raw/main/torch-1.12.0a0+2c916298.nv22.04-cp39-cp39-linux_aarch64.whl
 # torchaudio: (Si es necesario, verifica una URL similar o elimina si no se usa)
-# torchaudio
+torchaudio
