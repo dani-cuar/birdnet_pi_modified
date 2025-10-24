@@ -1,11 +1,10 @@
 pip
 wheel
 setuptools
-https://github.com/dani-cuar/birdnet_pi_modified/releases/download/bullseye-wheel/tflite_runtime-2.6.0-cp39-none-linux_aarch64.whl
 #torchvision wheel:
 https://github.com/dani-cuar/birdnet_pi_modified/releases/download/torchvision-wheel/torchvision-0.13.0a0+da3794e-cp39-cp39-linux_aarch64.whl
-#torch:
-https://github.com/dani-cuar/birdnet_pi_modified/releases/download/torch-wheel/torch-1.12.0a0+git67ece03-cp39-cp39-linux_aarch64.whl
+torch==2.8.0
+torchaudio==2.8.0
 colorama==0.4.4
 librosa
 pytz
@@ -14,12 +13,4 @@ pandas
 seaborn
 streamlit
 plotly
-# Librerías de PyTorch
-#torch
-# Librerías de PyTorch:
-# Deben ser instaladas como wheels pre-compilados para aarch64 (ARM64)
-# Estos son ejemplos de URLs de wheels para Python 3.9/ARM64. ¡Verificar la disponibilidad!
-# torch:
-https://github.com/Qengineering/PyTorch-Raspberry-Pi/raw/main/torch-1.12.0a0+2c916298.nv22.04-cp39-cp39-linux_aarch64.whl
-#torchaudio
-https://github.com/dani-cuar/birdnet_pi_modified/releases/download/torchaudio-wheel/torchaudio-0.10.0-cp39-cp39-manylinux2014_aarch64.whl
+
