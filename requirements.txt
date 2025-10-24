@@ -2,8 +2,10 @@ pip
 wheel
 setuptools
 https://github.com/dani-cuar/birdnet_pi_modified/releases/download/bullseye-wheel/tflite_runtime-2.6.0-cp39-none-linux_aarch64.whl
-#torchvision wheel
+#torchvision wheel:
 https://github.com/dani-cuar/birdnet_pi_modified/releases/download/torchvision-wheel/torchvision-0.13.0a0+da3794e-cp39-cp39-linux_aarch64.whl
+#torch:
+https://github.com/dani-cuar/birdnet_pi_modified/releases/download/torch-wheel/torch-1.12.0a0+git67ece03-cp39-cp39-linux_aarch64.whl
 colorama==0.4.4
 librosa
 pytz
