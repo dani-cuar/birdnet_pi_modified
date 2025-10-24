@@ -5,10 +5,10 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
-try:
-    import tflite_runtime.interpreter as tflite
-except:
-    from tensorflow import lite as tflite
+# try:
+#     import tflite_runtime.interpreter as tflite
+# except:
+#     from tensorflow import lite as tflite
 
 import argparse
 import operator
