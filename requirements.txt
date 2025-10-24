@@ -22,4 +22,4 @@ plotly
 # torch:
 https://github.com/Qengineering/PyTorch-Raspberry-Pi/raw/main/torch-1.12.0a0+2c916298.nv22.04-cp39-cp39-linux_aarch64.whl
 #torchaudio
-
+https://github.com/dani-cuar/birdnet_pi_modified/releases/download/torchaudio-wheel/torchaudio-0.10.0-cp39-cp39-manylinux2014_aarch64.whl
