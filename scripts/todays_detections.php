@@ -21,7 +21,7 @@ if($db == False){
 
 // AGREGADO
 // 2) Score => Confidence (en porcentaje)
-$confExpr = "ROUND(100.0 * CAST(Score AS REAL))";
+$confExpr = "ROUND(CASE WHEN Confidence IS NULL THEN NULL WHEN Confidence <= 1.0 THEN 100.0 * CAST(Confidence AS REAL) ELSE CAST(Confidence AS REAL) END)";
 
 // Usa parámetro para el LIMIT
 $sql = "SELECT Time, Com_Name, Sci_Name, $confExpr AS Confidence, File_Name
@@ -73,13 +73,14 @@ if($statement3 == False){
 $result3 = $statement3->execute();
 $hourcount = $result3->fetchArray(SQLITE3_ASSOC);
 
-$statement4 = $db->prepare(
-  "SELECT Com_Name, Sci_Name, Time,
-          ROUND(100.0 * CAST(Score AS REAL)) AS Confidence
-   FROM detections
-   ORDER BY Date DESC, Time DESC
-   LIMIT 1"
-);
+// $statement4 = $db->prepare(
+//   "SELECT Com_Name, Sci_Name, Time,
+//           ROUND(100.0 * CAST(Score AS REAL)) AS Confidence
+//    FROM detections
+//    ORDER BY Date DESC, Time DESC
+//    LIMIT 1"
+// );
+$statement4 = $db->prepare("SELECT Com_Name, Sci_Name, Time, ROUND(CASE WHEN Confidence IS NULL THEN NULL WHEN Confidence <= 1.0 THEN 100.0 * CAST(Confidence AS REAL) ELSE CAST(Confidence AS REAL) END) AS Confidence FROM detections ORDER BY Date DESC, Time DESC LIMIT 1");
 
 // $statement4 = $db->prepare('SELECT Com_Name, Sci_Name, Time, Confidence FROM detections LIMIT 1');
 // if($statement4 == False){
