@@ -30,7 +30,7 @@ Ideal for marine monitoring, bioacoustics projects, and automatic detection of w
 
 ## Requirements
 * A Raspberry Pi 4B or Raspberry Pi 3B+ (The 3B+ must run on RaspiOS-ARM64-**Lite**)
-* An SD Card with the **_64-bit version of RaspiOS_** installed (please use Bullseye) -- Lite is recommended, but the installation works on RaspiOS-ARM64-Full as well. [(Download the latest here)](https://downloads.raspberrypi.org/raspios_lite_arm64/images/)
+* An SD Card with the **_64-bit version of RaspiOS_** installed (please use Bullseye) -- the installation works on RaspiOS-ARM64-Full. [(Download the recommend model here)](https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-11-08/)
 * A USB Microphone or Sound Card -- u usb interface and a hydrophone
 
 ## Installation
