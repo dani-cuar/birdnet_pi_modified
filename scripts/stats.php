@@ -14,14 +14,16 @@ if($db == False) {
 // 	echo "Database busy";
 // 	header("refresh: 0;");
 // }
-$statement = $db->prepare(
-  "SELECT Date, Time, File_Name, Com_Name,
-          COUNT(*) AS Occurrences,
-          ROUND(100.0 * MAX(CAST(Score AS REAL))) AS MaxConfidence
-   FROM detections
-   GROUP BY Com_Name
-   ORDER BY Occurrences DESC"
-);
+// $statement = $db->prepare(
+//   "SELECT Date, Time, File_Name, Com_Name,
+//           COUNT(*) AS Occurrences,
+//           ROUND(100.0 * MAX(CAST(Score AS REAL))) AS MaxConfidence
+//    FROM detections
+//    GROUP BY Com_Name
+//    ORDER BY Occurrences DESC"
+// );
+$statement = $db->prepare("SELECT Date, Time, File_Name, Com_Name, COUNT(*) AS Occurrences, ROUND(CASE WHEN Confidence IS NULL THEN NULL WHEN Confidence <= 1.0 THEN 100.0 * MAX(CAST(Confidence AS REAL)) ELSE MAX(CAST(Confidence AS REAL)) END) AS MaxConfidence FROM detections GROUP BY Com_Name ORDER BY Occurrences DESC");
+
 $result = $statement->execute();
 
 // $statement2 = $db->prepare('SELECT Date, Time, File_Name, Com_Name, COUNT(*), MAX(Confidence) FROM detections GROUP BY Com_Name ORDER BY Com_Name');
@@ -29,40 +31,44 @@ $result = $statement->execute();
 // 	echo "Database busy";
 // 	header("refresh: 0;");
 // }
-$statement2 = $db->prepare(
-  "SELECT Date, Time, File_Name, Com_Name,
-          COUNT(*) AS Occurrences,
-          ROUND(100.0 * MAX(CAST(Score AS REAL))) AS MaxConfidence
-   FROM detections
-   GROUP BY Com_Name
-   ORDER BY Com_Name"
-);
+// $statement2 = $db->prepare(
+//   "SELECT Date, Time, File_Name, Com_Name,
+//           COUNT(*) AS Occurrences,
+//           ROUND(100.0 * MAX(CAST(Score AS REAL))) AS MaxConfidence
+//    FROM detections
+//    GROUP BY Com_Name
+//    ORDER BY Com_Name"
+// );
+$statement2 = $db->prepare("SELECT Date, Time, File_Name, Com_Name, COUNT(*) AS Occurrences, ROUND(CASE WHEN Confidence IS NULL THEN NULL WHEN Confidence <= 1.0 THEN 100.0 * MAX(CAST(Confidence AS REAL)) ELSE MAX(CAST(Confidence AS REAL)) END) AS MaxConfidence FROM detections GROUP BY Com_Name ORDER BY Com_Name");
+
 $result2 = $statement2->execute();
 
 
 
 if(isset($_POST['species'])){
   $selection = $_POST['species'];
-  $statement3 = $db->prepare("
-    SELECT d.Com_Name,
-           d.Sci_Name,
-           c.Occurrences,
-           ROUND(100.0 * c.MaxScore) AS MaxConfidence,
-           d.File_Name, d.Date, d.Time
-    FROM detections AS d
-    JOIN (
-      SELECT Com_Name,
-             COUNT(*) AS Occurrences,
-             MAX(CAST(Score AS REAL)) AS MaxScore
-      FROM detections
-      WHERE Com_Name = :species
-    ) AS c
-      ON c.Com_Name = d.Com_Name
-    WHERE d.Com_Name = :species
-      AND CAST(d.Score AS REAL) = c.MaxScore
-    ORDER BY d.Date DESC, d.Time DESC
-    LIMIT 1
-  ");
+  // $statement3 = $db->prepare("
+  //   SELECT d.Com_Name,
+  //          d.Sci_Name,
+  //          c.Occurrences,
+  //          ROUND(100.0 * c.MaxScore) AS MaxConfidence,
+  //          d.File_Name, d.Date, d.Time
+  //   FROM detections AS d
+  //   JOIN (
+  //     SELECT Com_Name,
+  //            COUNT(*) AS Occurrences,
+  //            MAX(CAST(Score AS REAL)) AS MaxScore
+  //     FROM detections
+  //     WHERE Com_Name = :species
+  //   ) AS c
+  //     ON c.Com_Name = d.Com_Name
+  //   WHERE d.Com_Name = :species
+  //     AND CAST(d.Score AS REAL) = c.MaxScore
+  //   ORDER BY d.Date DESC, d.Time DESC
+  //   LIMIT 1
+  // ");
+  $statement3 = $db->prepare("SELECT d.Com_Name, d.Sci_Name, c.Occurrences, ROUND(CASE WHEN c.MaxConfidence IS NULL THEN NULL WHEN c.MaxConfidence <= 1.0 THEN 100.0 * c.MaxConfidence ELSE c.MaxConfidence END) AS MaxConfidence, d.File_Name, d.Date, d.Time FROM detections AS d JOIN (SELECT Com_Name, COUNT(*) AS Occurrences, MAX(CAST(Confidence AS REAL)) AS MaxConfidence FROM detections WHERE Com_Name = :species) AS c ON c.Com_Name = d.Com_Name WHERE d.Com_Name = :species AND CAST(d.Confidence AS REAL) = c.MaxConfidence ORDER BY d.Date DESC, d.Time DESC LIMIT 1");
+
   if (!$statement3) { die("Database busy"); }
   $statement3->bindValue(':species', $selection, SQLITE3_TEXT);
   $result3 = $statement3->execute();
@@ -110,54 +116,46 @@ $filename = "/By_Date/".$results['Date']."/".$comname."/".$results['File_Name'];
 </div>
 <div class="column center">
 <?php if(!isset($_POST['species'])){
-?><p class="centered">Choose a species to load images from Wikimedia Commons.</p>
+?>
 <?php
 };?>
 <?php if(isset($_POST['species'])){
   $species = $_POST['species'];
    
-while($results=$result3->fetchArray(SQLITE3_ASSOC)){
-  // $count = $results['COUNT(*)'];
-  // $maxconf = $results['MAX(Confidence)'];
-  $count = $results['Occurrences'];
-  $maxconf = $results['MaxConfidence'];
-  $date = $results['Date'];
-  $time = $results['Time'];
-  $name = $results['Com_Name'];
-  $sciname = $results['Sci_Name'];
-  $dbsciname = preg_replace('/ /', '_', $sciname);
-  $comname = preg_replace('/ /', '_', $results['Com_Name']);
-  $comname = preg_replace('/\'/', '', $comname);
-  $linkname = preg_replace('/_/', '+', $dbsciname);
-  $filename = "/By_Date/".$date."/".$comname."/".$results['File_Name'];
-  echo str_pad("<h3>$species</h3>
-    <table><tr>
-  <td><a href=\"https://wikipedia.org/wiki/$dbsciname\" target=\"top\"/><i>$sciname</i></a><br>
-  <b>Occurrences: </b>$count<br>
-  <b>Max Confidence: </b>$maxconf<br>
-  <b>Best Recording: </b>$date $time<br>
-  <a href=\"https://allaboutbirds.org/guide/$comname\" target=\"top\"/>All About Birds</a><br>
-  <video controls poster=\"$filename.png\" title=\"$filename\"><source src=\"$filename\"></video></td>
-  </tr>
-    </table>
-  <p>Loading Images from <a href=\"https://commons.wikimedia.org/w/index.php?search=$linkname&title=Special:MediaSearch&go=Go&type=image\" target=\"_blank\">Wikimedia Commons</a></p>", '6096');
+  while($results = $result3->fetchArray(SQLITE3_ASSOC)) {
+    $count = $results['Occurrences'];
+    $maxconf = $results['MaxConfidence'];
+    $date = $results['Date'];
+    $time = $results['Time'];
+    $name = $results['Com_Name'];
+    $sciname = $results['Sci_Name'];
+    $dbsciname = preg_replace('/ /', '_', $sciname);
+    $comname = preg_replace('/ /', '_', $results['Com_Name']);
+    $comname = preg_replace('/\'/', '', $comname);
+    $filename = "/By_Date/".$date."/".$comname."/".$results['File_Name'];
   
-  ob_flush();
-  flush();
-  $imagelink = "https://commons.wikimedia.org/w/index.php?search=$linkname&title=Special:MediaSearch&go=Go&type=image";
-  $homepage = file_get_contents($imagelink);
-  preg_match_all("{<img\\s*(.*?)src=('.*?'|\".*?\"|[^\\s]+)(.*?)\\s*/?>}ims", $homepage, $matches, PREG_SET_ORDER);
-  foreach ($matches as $val) {
-      $pos = strpos($val[2],"/");
-      $link = substr($val[2],1,-1);
-      if($pos !== 1 && strpos($link, "upload") == true && strpos($link, "CentralAutoLogin") == false)
-          echo "<img src=\"$link\">";
+    echo "<h3>$name</h3>
+      <table><tr>
+        <td>
+          <i>$sciname</i><br>
+          <b>Occurrences:</b> $count<br>
+          <b>Max Confidence:</b> $maxconf<br>
+          <b>Best Recording:</b> $date $time<br>
+          <video controls poster=\"{$filename}.png\" title=\"$filename\">
+            <source src=\"$filename\">
+          </video>
+        </td>
+      </tr></table>";
+  
+    ob_flush();
+    flush();
   }
-}}
-?>
-<br><br><br>
-    <table>
-<?php
+}
+  ?>
+  <br><br><br>
+  <table>
+  <?php
+
 while($results=$result->fetchArray(SQLITE3_ASSOC))
 {
 $comname = preg_replace('/ /', '_', $results['Com_Name']);
@@ -182,4 +180,3 @@ $filename = "/By_Date/".$results['Date']."/".$comname."/".$results['File_Name'];
 </div>
 </body>
 </html>
-
