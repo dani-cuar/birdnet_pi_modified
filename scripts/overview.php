@@ -5,14 +5,16 @@ $chart = "Combo-$myDate.png";
 
 // $db = new SQLite3('./scripts/birds.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
 $db = new SQLite3('./scripts/detections_whale.db', SQLITE3_OPEN_CREATE | SQLITE3_OPEN_READWRITE);
+
 if($db == False) {
-  echo "Database is busy";
+  // echo "echo Database is busy";
+  echo "<h1>ERROR: Database is busy - FALLA EN EL READONLY.</h1>";
   header("refresh: 0;");
 }
 
 $statement = $db->prepare('SELECT COUNT(*) FROM detections');
 if($statement == False) {
-  echo "Database is busy";
+  echo "Database is busy1";
   header("refresh: 0;");
 }
 $result = $statement->execute();
@@ -20,7 +22,7 @@ $totalcount = $result->fetchArray(SQLITE3_ASSOC);
 
 $statement2 = $db->prepare('SELECT COUNT(*) FROM detections WHERE Date == DATE(\'now\', \'localtime\')');
 if($statement2 == False) {
-  echo "Database is busy";
+  echo "Database is busy2";
   header("refresh: 0;");
 }
 $result2 = $statement2->execute();
@@ -28,7 +30,7 @@ $todaycount = $result2->fetchArray(SQLITE3_ASSOC);
 
 $statement3 = $db->prepare('SELECT COUNT(*) FROM detections WHERE Date == Date(\'now\', \'localtime\') AND TIME >= TIME(\'now\', \'localtime\', \'-1 hour\')');
 if($statement3 == False) {
-  echo "Database is busy";
+  echo "Database is busy3";
   header("refresh: 0;");
 }
 $result3 = $statement3->execute();
@@ -39,7 +41,7 @@ $hourcount = $result3->fetchArray(SQLITE3_ASSOC);
 $statement4 = $db->prepare("SELECT Com_Name, Sci_Name, Date, Time, ROUND(CASE WHEN Confidence IS NULL THEN NULL WHEN Confidence <= 1.0 THEN 100.0 * CAST(Confidence AS REAL) ELSE CAST(Confidence AS REAL) END) AS Confidence, File_Name FROM detections ORDER BY Date DESC, Time DESC LIMIT 1");
 
 if($statement4 == False) {
-  echo "Database is busy";
+  echo "Database is busy4";
   header("refresh: 0;");
 }
 $result4 = $statement4->execute();
@@ -51,7 +53,7 @@ $filename = "/By_Date/".$mostrecent['Date']."/".$comname."/".$mostrecent['File_N
 
 $statement5 = $db->prepare('SELECT COUNT(DISTINCT(Com_Name)) FROM detections WHERE Date == Date(\'now\',\'localtime\')');
 if($statement5 == False) {
-  echo "Database is busy";
+  echo "Database is busy5";
   header("refresh: 0;");
 }
 $result5 = $statement5->execute();
@@ -59,7 +61,7 @@ $speciestally = $result5->fetchArray(SQLITE3_ASSOC);
 
 $statement6 = $db->prepare('SELECT COUNT(DISTINCT(Com_Name)) FROM detections');
 if($statement6 == False) {
-  echo "Database is busy";
+  echo "Database is busy6";
   header("refresh: 0;");
 }
 $result6 = $statement6->execute();
@@ -124,7 +126,6 @@ if (file_exists('./Charts/'.$chart)) {
     <form action="" method="POST">
         <input type="hidden" name="view" value="Species Stats">
         <button type="submit" name="species" value="<?php echo $mostrecent['Com_Name'];?>"><?php echo $mostrecent['Com_Name'];?>: </button>
-        <a href="https://wikipedia.org/wiki/<?php echo $sciname;?>" target="_blank"/><i><?php echo $mostrecent['Sci_Name'];?></i></a>
         <br>Confidence: <?php echo $mostrecent['Confidence'];?><br>
         <video controls poster="<?php echo $filename.".png";?>" preload="none" title="<?php echo $filename;?>"><source src="<?php echo $filename;?>"></video></td>
     </form>
@@ -134,3 +135,4 @@ if (file_exists('./Charts/'.$chart)) {
 <img src='/spectrogram.png?nocache=<?php echo time();?>' >
 </div>
 </div>
+
