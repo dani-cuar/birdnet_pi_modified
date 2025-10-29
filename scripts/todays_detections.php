@@ -21,7 +21,9 @@ if($db == False){
 
 // AGREGADO
 // 2) Score => Confidence (en porcentaje)
+// $confExpr = "ROUND(100.0 * CAST(Score AS REAL))";
 $confExpr = "ROUND(CASE WHEN Confidence IS NULL THEN NULL WHEN Confidence <= 1.0 THEN 100.0 * CAST(Confidence AS REAL) ELSE CAST(Confidence AS REAL) END)";
+
 
 // Usa parámetro para el LIMIT
 $sql = "SELECT Time, Com_Name, Sci_Name, $confExpr AS Confidence, File_Name
@@ -157,8 +159,9 @@ $sciname = preg_replace('/ /', '_', $todaytable['Sci_Name']);
 ?>
       <tr id="<?php echo $iterations;?>">
       <td><?php echo $todaytable['Time'];?><br>
-      <b><a class="a2" href="https://allaboutbirds.org/guide/<?php echo $comname;?>" target="top"><?php echo $todaytable['Com_Name'];?></a></b><br>
-      <a class="a2" href="https://wikipedia.org/wiki/<?php echo $sciname;?>" target="top"><i><?php echo $todaytable['Sci_Name'];?></i></a><br>
+      <!-- <b><a class="a2" href="https://allaboutbirds.org/guide/<?php echo $comname;?>" target="top"><?php echo $todaytable['Com_Name'];?></a></b><br>
+      <a class="a2" href="https://wikipedia.org/wiki/<?php echo $sciname;?>" target="top"><i><?php echo $todaytable['Sci_Name'];?></i></a><br> -->
+      <b><?php echo $todaytable['Com_Name'];?></b><br>
       <b>Confidence:</b> <?php echo $todaytable['Confidence'];?><br>
       <video controls poster="<?php echo $filename.".png";?>" preload="none" title="<?php echo $filename;?>"><source preload="none" src="<?php echo $filename;?>"></video>
       </td>
@@ -178,3 +181,4 @@ if($iterations == $display_limit) { ?>
 </center>
 <?php } ?>
 </div>
+
